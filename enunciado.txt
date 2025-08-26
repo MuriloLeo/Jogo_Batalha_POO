@@ -1,0 +1,21 @@
+🎮 Jogo de Batalha entre Personagens (modo texto)
+Descrição:
+
+Crie personagens com atributos (vida, ataque, defesa) e simule batalhas entre eles.
+
+Funcionalidades:
+
+Criar personagens de classes diferentes (Guerreiro, Mago, Arqueiro).
+Cada classe tem comportamentos diferentes (ex: Mago pode usar magia, Guerreiro tem mais defesa).
+Lutar em turnos até alguém vencer.
+
+Conceitos de POO usados:
+
+Herança e polimorfismo: classes de personagens com métodos sobrescritos (atacar())
+Encapsulamento: controlar atributos como vida (não deixar negativos)
+Métodos especiais (como __str__ para imprimir personagens)
+
+Extra:
+
+Sistema de XP e evolução de nível
+Inventário de itens (pode adicionar composição com uma classe Item)
