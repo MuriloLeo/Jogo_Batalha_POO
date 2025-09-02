@@ -1,3 +1,4 @@
+import random
 from dataclasses import dataclass, field
 from abc import ABC, abstractmethod
 
@@ -16,30 +17,33 @@ class Personagem(ABC):
             raise ValueError("A defesa deve ser maior que 0!")
 
     @abstractmethod
-    def atacar(self):
+    def atacar(self, alvo):
         ...
 
     @abstractmethod
-    def habilidade_especial(self):
+    def habilidade_especial(self, alvo):
         ...
 
 
 class Guerreiro(Personagem):
     furia = 0
 
-    def atacar(self):
-        self.furia += 1 
-        print(f'Ataque de espada: {self.ataque} de dano! Sua habilidade especial está acumulando...')
+    def atacar(self, alvo):
+        self.furia += 1
+        dano = max(0, self.ataque - alvo.defesa // 10)
+        alvo.vida -= dano
+        print(f'Ataque de espada causa {dano} de dano! (Fúria {self.furia}/4)')
         if self.furia >= 4:
-            print(f'Fúria acumulada! habilidade especial pronta para ser utilizada')
+            print(f'⚔️ Fúria acumulada! Habilidade especial pronta!')
 
-    def habilidade_especial(self):
+    def habilidade_especial(self, alvo):
         if self.furia >= 4:
             self.furia = 0
-            return f'Efeito de fúria ativado! \n + 10 de sangramento'
+            alvo.vida -= 10
+            print(f'Fúria ativada! +10 de sangramento em {alvo.__class__.__name__}')
         else:
-            return f'Fúria acumulando...'
-        
+            print(f'Fúria ainda acumulando...')
+
 
 @dataclass(repr=False)
 class Mago(Personagem):
@@ -47,9 +51,8 @@ class Mago(Personagem):
     buff_vida = 0
 
     def __repr__(self):
-        magias = [(m, v) for m, v in self.ataque.items()]
-        return f"{__class__.__name__}(vida={self.vida}, magias={magias}, defesa={self.defesa})"
-    
+        return f"Mago(vida={self.vida}, magias={list(self.ataque.keys())}, defesa={self.defesa})"
+
     def __post_init__(self):
         if self.vida <= 0:
             raise ValueError("A vida deve ser maior que 0!")
@@ -60,37 +63,40 @@ class Mago(Personagem):
         if not all(isinstance(dano, int) and dano > 0 for dano in self.ataque.values()):
             raise ValueError("Todas as magias devem ter dano inteiro positivo!")
 
-    def atacar(self):
-        for magia, dmg in self.ataque.items():
-            print(f'{magia}: {dmg}')
-        magia_selecionada = str(input('Qual ataque deseja usar?: '))
-        if magia_selecionada in self.ataque.keys():
-            print(f'{magia_selecionada} lançada: {self.ataque[magia_selecionada]} de dano')
-            self.buff_vida += 1
-        else:
-            print('Ataque desconhecido... perca de turno!')
-                
-    def habilidade_especial(self):
+    def atacar(self, alvo):
+        magia_selecionada = random.choice(list(self.ataque.keys()))
+        dano = max(0, self.ataque[magia_selecionada] - alvo.defesa // 10)
+        alvo.vida -= dano
+        self.buff_vida += 1
+        print(f'🪄 {magia_selecionada} causa {dano} de dano! (Buff Vida {self.buff_vida}/7)')
+
+    def habilidade_especial(self, alvo=None):
         if self.buff_vida >= 7:
             self.vida += self.buff_vida
-            print(f'Aumento de vida ativado! \n + {self.buff_vida} adicionado a vida! \n Vida atual: {self.vida}')
+            print(f'Aumento de vida ativado! +{self.buff_vida} de vida (Total: {self.vida})')
             self.buff_vida = 0
         else:
-            return f'Aumento de vida acumulando...'
+            print(f'Aumento de vida acumulando...')
+
+
 
 class Arqueiro(Personagem):
     flecha_congelante = 0
-    
-    def atacar(self):
-        self.flecha_congelante += 1 
-        print(f'Flecha disparada: {self.ataque} de dano! Sua habilidade especial está acumulando...')
-        if self.flecha_congelante >= 4:
-            print(f'Runa congelante liberada! habilidade especial pronta para ser utilizada')
-    
-    def habilidade_especial(self):
+
+    def atacar(self, alvo):
+        self.flecha_congelante += 1
+        dano = max(0, self.ataque - alvo.defesa // 10)
+        alvo.vida -= dano
+        print(f'🏹 Flecha acerta {dano} de dano! (Runas {self.flecha_congelante}/8)')
+        if self.flecha_congelante >= 8:
+            print(f'❄️ Runa congelante pronta!')
+
+    def habilidade_especial(self, alvo):
         if self.flecha_congelante >= 8:
             self.flecha_congelante = 0
-            return f'Flecha de gelo disparada!\nEfeito de congelamento aplicado! O inimigo perde um turno'
+            alvo.vida -= 15
+            print(f'❄️ Flecha de gelo disparada! +15 de dano e inimigo perde turno!')
+            return True 
         else:
-            return f'Runa esfriando...'
-
+            print(f'Runas ainda esfriando...')
+            return False
